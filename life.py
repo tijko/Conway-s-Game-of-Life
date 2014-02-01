@@ -124,10 +124,10 @@ class Board(object):
         for cell in self.living_cells:
             self.living_cells[cell].generations += 1
         
-    def clear(self):
+    def clear_board(self):
         self.living_cells = dict()
 
-    def state(self):
+    def current_state(self):
         print '    === Grid State :: Cycle %d ===' % self.cycle_count
         for cell in self.living_cells:
             print self.living_cells[cell]
@@ -157,9 +157,9 @@ class Conway(Board):
                         if self.start_rect.collidepoint(pos):
                             self.cycle = True
                         elif self.clear_rect.collidepoint(pos):
-                            self.clear()
+                            self.clear_board()
                         elif self.state_rect.collidepoint(pos):
-                            self.state()
+                            self.current_state()
                         elif event.button == 1:
                             self.L_MOUSEBUTTON_DOWN = True
                         elif event.button == 3:
