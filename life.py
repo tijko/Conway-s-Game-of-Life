@@ -141,48 +141,54 @@ class Conway(Board):
         self.L_MOUSEBUTTON_DOWN = False
         self.R_MOUSEBUTTON_DOWN = False
 
+    def life_between_cycle(self):
+        if self.L_MOUSEBUTTON_DOWN:
+            self.create_cell()
+        elif self.R_MOUSEBUTTON_DOWN:
+            self.destroy_cell()
+        for event in pygame.event.get():
+            if (event.type == pygame.KEYDOWN and 
+                event.key == pygame.K_ESCAPE):
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                if self.start_rect.collidepoint(pos):
+                    self.cycle = True
+                elif self.clear_rect.collidepoint(pos):
+                    self.clear_board()
+                elif self.state_rect.collidepoint(pos):
+                    self.current_state()
+                elif event.button == 1:
+                    self.L_MOUSEBUTTON_DOWN = True
+                elif event.button == 3:
+                    self.R_MOUSEBUTTON_DOWN = True
+            elif (event.type == pygame.MOUSEBUTTONUP and
+                  event.button == 1):
+                self.L_MOUSEBUTTON_DOWN = False
+            elif (event.type == pygame.MOUSEBUTTONUP and
+                  event.button == 3):
+                self.R_MOUSEBUTTON_DOWN = False
+                        
+    def life_cycle(self):		
+        pos = pygame.mouse.get_pos()
+        for event in pygame.event.get():
+            if (event.type == pygame.KEYDOWN and
+                event.key == pygame.K_ESCAPE):
+                sys.exit()
+            elif (event.type == pygame.MOUSEBUTTONDOWN and
+                  self.stop_rect.collidepoint(pos)):
+                self.cycle = False
+        self.cycle_count += 1
+        self.next_cell_generation()
+        self.calculate_cell_state()
+        time.sleep(1)
+
     def life_loop(self):
         while True:
             if not self.cycle:
-                if self.L_MOUSEBUTTON_DOWN:
-                    self.create_cell()
-                elif self.R_MOUSEBUTTON_DOWN:
-                    self.destroy_cell()
-                for event in pygame.event.get():
-                    if (event.type == pygame.KEYDOWN and 
-                        event.key == pygame.K_ESCAPE):
-                        sys.exit()
-                    elif event.type == pygame.MOUSEBUTTONDOWN:
-                        pos = pygame.mouse.get_pos()
-                        if self.start_rect.collidepoint(pos):
-                            self.cycle = True
-                        elif self.clear_rect.collidepoint(pos):
-                            self.clear_board()
-                        elif self.state_rect.collidepoint(pos):
-                            self.current_state()
-                        elif event.button == 1:
-                            self.L_MOUSEBUTTON_DOWN = True
-                        elif event.button == 3:
-                            self.R_MOUSEBUTTON_DOWN = True
-                    elif (event.type == pygame.MOUSEBUTTONUP and
-                          event.button == 1):
-                        self.L_MOUSEBUTTON_DOWN = False
-                    elif (event.type == pygame.MOUSEBUTTONUP and
-                          event.button == 3):
-                        self.R_MOUSEBUTTON_DOWN = False
+                self.life_between_cycle()    
             else:
-                pos = pygame.mouse.get_pos()
-                for event in pygame.event.get():
-                    if (event.type == pygame.KEYDOWN and
-                        event.key == pygame.K_ESCAPE):
-                        sys.exit()
-                    elif (event.type == pygame.MOUSEBUTTONDOWN and
-                          self.stop_rect.collidepoint(pos)):
-                        self.cycle = False
-                self.cycle_count += 1
-                self.next_cell_generation()
-                self.calculate_cell_state()
-                time.sleep(1)
+                self.life_cycle()
             self.update
 
 
