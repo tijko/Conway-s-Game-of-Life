@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import random
 import pygame
 import time
 import sys
@@ -43,6 +44,7 @@ class Board(object):
         self.grid = pygame.image.load('images/grid.png')
         self.state = pygame.image.load('images/state.png')
         self.clear = pygame.image.load('images/clear.png')
+        self.random = pygame.image.load('images/random.png')
         self.cycle = False
         self.single_cycle = False
         self.cycle_count = 1
@@ -65,6 +67,7 @@ class Board(object):
         self.single_rect = self.board.blit(self.single, (760, 300))
         self.state_rect = self.board.blit(self.state,(760, 450))
         self.clear_rect = self.board.blit(self.clear, (760, 500))
+        self.random_rect = self.board.blit(self.random, (760, 150))
         for cell in self.living_cells:
             generation = self.living_cells[cell].generations
             x, y = self.living_cells[cell].node
@@ -89,9 +92,11 @@ class Board(object):
                 STAGE = 0
         return (R, G, B)
 
-    def create_cell(self):
-        cell_position = pygame.mouse.get_pos()
-        node = tuple(map(self.fill_node, cell_position))
+    def create_cell(self, node=None):
+        cell_position = node
+        if not node:
+            cell_position = pygame.mouse.get_pos()
+            node = tuple(map(self.fill_node, cell_position))
         if node in self.nodes and not self.living_cells.get(node):
             new_cell = Cell(cell_position, node, self.cycle_count)
             self.living_cells[node] = new_cell
@@ -135,6 +140,11 @@ class Board(object):
         for cell in self.living_cells:
             print self.living_cells[cell]
 
+    def randomize(self):
+       for i in xrange(500): 
+            random_node = random.choice(self.nodes)
+            self.create_cell(random_node)
+
 
 class Conway(Board):
 
@@ -159,6 +169,9 @@ class Conway(Board):
                     self.cycle = True
                 elif self.single_rect.collidepoint(pos):
                     self.single_cycle = True
+                elif self.random_rect.collidepoint(pos):
+                    self.clear_board()
+                    self.randomize()
                 elif self.clear_rect.collidepoint(pos):
                     self.clear_board()
                 elif self.state_rect.collidepoint(pos):
