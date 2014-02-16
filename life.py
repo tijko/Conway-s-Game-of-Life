@@ -39,10 +39,12 @@ class Board(object):
         self.board.fill((156, 159, 132), (721, 0, 179, 720))
         self.start = pygame.image.load('images/start.png')
         self.stop = pygame.image.load('images/stop.png')
+        self.single = pygame.image.load('images/cycle.png')
         self.grid = pygame.image.load('images/grid.png')
         self.state = pygame.image.load('images/state.png')
         self.clear = pygame.image.load('images/clear.png')
         self.cycle = False
+        self.single_cycle = False
         self.cycle_count = 1
         self.life_stage = 17
         self.nodes = list(product(xrange(0, 720, 10), xrange(0, 720, 10)))
@@ -58,8 +60,9 @@ class Board(object):
         self.board.fill((0, 0, 0), (720, 0, 1, 720))
         self.board.fill((92, 117, 94), (0, 0, 720, 720))
         self.board.fill((156, 159, 132), (721, 0, 179, 720))
-        self.start_rect = self.board.blit(self.start, (760, 300))
+        self.start_rect = self.board.blit(self.start, (760, 250))
         self.stop_rect = self.board.blit(self.stop, (760, 350))
+        self.single_rect = self.board.blit(self.single, (760, 300))
         self.state_rect = self.board.blit(self.state,(760, 450))
         self.clear_rect = self.board.blit(self.clear, (760, 500))
         for cell in self.living_cells:
@@ -154,6 +157,8 @@ class Conway(Board):
                 pos = pygame.mouse.get_pos()
                 if self.start_rect.collidepoint(pos):
                     self.cycle = True
+                elif self.single_rect.collidepoint(pos):
+                    self.single_cycle = True
                 elif self.clear_rect.collidepoint(pos):
                     self.clear_board()
                 elif self.state_rect.collidepoint(pos):
@@ -185,10 +190,13 @@ class Conway(Board):
 
     def life_loop(self):
         while True:
-            if not self.cycle:
-                self.life_between_cycle()    
-            else:
+            if self.single_cycle:
+                self.single_cycle = False
                 self.life_cycle()
+            elif self.cycle:
+                self.life_cycle()
+            else:
+                self.life_between_cycle()
             self.update
 
 
