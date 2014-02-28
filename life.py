@@ -124,8 +124,7 @@ class Board(object):
             elif len(live_neighbors) == 3 and node not in self.living_cells:
                 new_cell = Cell(node, node, self.cycle_count)
                 born_cells[node] = new_cell
-        for cell in died_cells:
-            del self.living_cells[cell]
+        map(self.living_cells.pop, died_cells)
         self.living_cells.update(born_cells)
 
     def next_cell_generation(self):
