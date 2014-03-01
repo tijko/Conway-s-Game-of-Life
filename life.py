@@ -7,6 +7,7 @@ import time
 import sys
 import os
 
+from functools import partial
 from itertools import product
 
 
@@ -51,7 +52,7 @@ class Board(object):
         self.life_stage = 17
         self.nodes = list(product(xrange(0, 720, 10), xrange(0, 720, 10)))
         self.fill_node = lambda x: x - (x % 10)
-        self.find_neighbors = lambda n, p: (n[0] + p[0], n[1] + p[1])
+        self.cal_neighbor = lambda n, p: map(sum, zip(n, p))
         self.neighbors = [[0, 10], [10, 0], [10, 10], [-10, 0], 
                           [0, -10], [-10, -10], [10, -10], [-10, 10]]
         self.living_cells = dict()
@@ -109,19 +110,27 @@ class Board(object):
             del self.living_cells[node]
 
     def calculate_cell_state(self):
-        # Any live cell with fewer than two live neighbours dies, as if caused by under-population.
-        # Any live cell with two or three live neighbours lives on to the next generation.
-        # Any live cell with more than three live neighbours dies, as if by overcrowding.
-        # Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.        
+        #
+        # 1.) Any live cell with fewer than two live neighbours dies, as if 
+        #     caused by under-population.
+        #
+        # 2.) Any live cell with two or three live neighbours lives on to the 
+        #     next generation.
+        #
+        # 3.) Any live cell with more than three live neighbours dies, as if by 
+        #     overcrowding.
+        #
+        # 4.) Any dead cell with exactly three live neighbours becomes a live 
+        #     cell, as if by reproduction.        
+        #
         born_cells = dict()
         died_cells = list()
         for node in self.nodes:
-            all_neighbors = [self.find_neighbors(node, p) 
-                             for p in self.neighbors]
-            live_neighbors = [n for n in all_neighbors if n in self.living_cells]
-            if self.living_cells.get(node) and len(live_neighbors) not in (2, 3):
+            neighbor = map(partial(self.cal_neighbor, node), self.neighbors)
+            neighbor = set(self.living_cells).intersection(map(tuple, neighbor))
+            if self.living_cells.get(node) and len(neighbor) not in (2, 3):
                 died_cells.append(node)
-            elif len(live_neighbors) == 3 and node not in self.living_cells:
+            elif len(neighbor) == 3 and node not in self.living_cells:
                 new_cell = Cell(node, node, self.cycle_count)
                 born_cells[node] = new_cell
         map(self.living_cells.pop, died_cells)
