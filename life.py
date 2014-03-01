@@ -76,6 +76,11 @@ class Board(object):
         self.board.blit(self.grid, (0, 0))
         pygame.display.flip()
 
+    def find_neighbors(self, node):
+        neighbors = map(partial(self.cal_neighbor, node), self.neighbors)
+        neighbors = set(self.living_cells).intersection(map(tuple, neighbors))
+        return neighbors
+
     def cell_stage(self, generation):
         STAGE = generation * self.life_stage
         R, G, B = (0, 255, 0)
@@ -106,8 +111,7 @@ class Board(object):
     def destroy_cell(self):               
         cell_position = pygame.mouse.get_pos()
         node = tuple(map(self.fill_node, cell_position))
-        if self.living_cells.get(node):
-            del self.living_cells[node]
+        if self.living_cells.get(node): del self.living_cells[node]
 
     def calculate_cell_state(self):
         # 1.) Any live cell with fewer than two live neighbours dies, as if 
@@ -121,11 +125,10 @@ class Board(object):
         born_cells = dict()
         died_cells = list()
         for node in self.nodes:
-            neighbor = map(partial(self.cal_neighbor, node), self.neighbors)
-            neighbor = set(self.living_cells).intersection(map(tuple, neighbor))
-            if self.living_cells.get(node) and len(neighbor) not in (2, 3):
+            neighbors = self.find_neighbors(node)
+            if self.living_cells.get(node) and len(neighbors) not in (2, 3):
                 died_cells.append(node)
-            elif len(neighbor) == 3 and node not in self.living_cells:
+            elif len(neighbors) == 3 and node not in self.living_cells:
                 new_cell = Cell(node, node, self.cycle_count)
                 born_cells[node] = new_cell
         map(self.living_cells.pop, died_cells)
@@ -155,10 +158,10 @@ class Board(object):
                 if not self.living_cells.get(random_node):
                     seeds.append(random_node)   
             for node in seeds:
-                neighbor = map(partial(self.cal_neighbor, node), self.neighbors)
-                neighbor = set(self.living_cells).intersection(map(tuple, neighbor))
-                weight = spawn_probabilities[len(neighbor)]                 
+                neighbors = self.find_neighbors(node)
+                weight = spawn_probabilities[len(neighbors)]                 
                 bags.extend([random_node] * weight)
+            random.shuffle(bags)
             selected_node = random.choice(bags)
             self.create_cell(selected_node)
                     
@@ -216,7 +219,7 @@ class Conway(Board):
         self.cycle_count += 1
         self.next_cell_generation()
         self.calculate_cell_state()
-        time.sleep(1)
+        time.sleep(0.1)
 
     def life_loop(self):
         while True:
