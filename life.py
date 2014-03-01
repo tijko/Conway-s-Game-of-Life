@@ -144,7 +144,7 @@ class Board(object):
             print self.living_cells[cell]
 
     def randomize(self):
-       for i in xrange(500): 
+       for _ in xrange(503): 
             random_node = random.choice(self.nodes)
             self.create_cell(random_node)
 
