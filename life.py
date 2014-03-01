@@ -144,10 +144,24 @@ class Board(object):
             print self.living_cells[cell]
 
     def randomize(self):
-        for _ in xrange(503): 
-            random_node = random.choice(self.nodes)
-            self.create_cell(random_node)
-
+        spawn_probabilities = {0:1, 1:3, 2:7, 
+                               3:7, 4:3, 5:2, 
+                               6:2, 7:1, 8:1}
+        for _ in xrange(743):
+            seeds = list()
+            bags = list()
+            while len(seeds) < 5:
+                random_node = random.choice(self.nodes)
+                if not self.living_cells.get(random_node):
+                    seeds.append(random_node)   
+            for node in seeds:
+                neighbor = map(partial(self.cal_neighbor, node), self.neighbors)
+                neighbor = set(self.living_cells).intersection(map(tuple, neighbor))
+                weight = spawn_probabilities[len(neighbor)]                 
+                bags.extend([random_node] * weight)
+            selected_node = random.choice(bags)
+            self.create_cell(selected_node)
+                    
 
 class Conway(Board):
 
