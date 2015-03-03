@@ -78,8 +78,7 @@ class Board(object):
 
     def find_neighbors(self, node):
         neighbors = map(partial(self.cal_neighbor, node), self.neighbors)
-        neighbors = set(self.living_cells).intersection(map(tuple, neighbors))
-        return neighbors
+        return self.living_cells.viewkeys() & map(tuple, neighbors)
 
     def cell_stage(self, generation):
         STAGE = generation * self.life_stage
